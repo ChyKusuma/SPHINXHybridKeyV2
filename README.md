@@ -15,27 +15,25 @@ In the thrilling era of quantum computers, where we find ourselves in a `Super P
 
 2. Inspiration from Tech Giants: The widespread adoption of curve448 and Kyber1024 by the larger tech community serves as our guiding light and inspiration. These algorithms have garnered trust and confidence from experts and industry leaders, paving the way for their integration into our hybrid scheme. By following in the footsteps of these role models, we embrace a solution that is not only innovative but also aligns with industry best practices.
 
-In this era of immense technological possibilities, the combination of curve448 and Kyber1024 in a hybrid key exchange scheme symbolizes our readiness to face the challenges presented by quantum computing. It demonstrates our commitment to leverage the proven track record of X25519 and the promising resilience of Kyber768. Together, these algorithms empower us to navigate the quantum landscape with confidence, ensuring the security and longevity of our cryptographic systems.
+In this era of immense technological possibilities, the combination of curve448 and Kyber1024 in a hybrid key exchange scheme symbolizes our readiness to face the challenges presented by quantum computing. It demonstrates our commitment to leverage the proven track record of X25519 and the promising resilience of Kyber1024. Together, these algorithms empower us to navigate the quantum landscape with confidence, ensuring the security and longevity of our cryptographic systems.
 
 ### The Purpose 
 
-[SPHINXKey]([https://github.com/ChyKusuma/SPHINXHybridKey])
+This code is alternative [SPHINXHybridKey](https://github.com/SPHINX-HUB-ORG/SPHINXHybridKey) as further consideration.
 
-This code is alternative for  consideration
+The combination of Curve448 and Kyber1024 in a hybrid key exchange is designed to harness the unique strengths of each algorithm, resulting in a more robust and versatile cryptographic solution.
 
-The combination of X25519 and Kyber768 in a hybrid key exchange is designed to harness the unique strengths of each algorithm, resulting in a more robust and versatile cryptographic solution.
+Curve448 is an elliptic curve cryptography (ECC) algorithm based on the Curve448 curve. It provides efficient and secure key exchange operations, offering advantages such as strong security guarantees, resistance against various attacks, and compact key sizes. Curve448 is well-suited for scenarios where efficient key generation and secure key exchange are essential.
 
-X25519 is an elliptic curve Diffie-Hellman (ECDH) key exchange algorithm based on the Curve25519 curve. It offers several advantages, including efficient key generation, compact key sizes, and resilience against various common attacks. X25519 excels in terms of both performance and security, making it an ideal choice for key exchange operations.
+Kyber1024, on the other hand, is a post-quantum key encapsulation mechanism (KEM) based on the Learning With Errors (LWE) problem. It addresses the security challenges posed by quantum computers by providing resistance against attacks by quantum adversaries. Kyber1024 offers a high level of security in a post-quantum computing era when traditional cryptographic schemes may be vulnerable.
 
-On the other hand, Kyber768 is a post-quantum key encapsulation mechanism (KEM) that addresses the security challenges posed by quantum computers. It is based on the Learning With Errors (LWE) problem and provides strong resistance against attacks by quantum adversaries. Kyber768 offers a robust security guarantee in a post-quantum computing era when traditional cryptographic schemes may be vulnerable.
-
-By combining X25519 and Kyber768 in a hybrid key exchange, we can leverage the efficiency and security benefits of X25519 while also incorporating the post-quantum resistance of Kyber768. This hybrid approach enables we to strike a balance between immediate performance needs and long-term security considerations. It is particularly advantageous in scenarios where both efficient key exchange and protection against future quantum threats are crucial.
+By combining Curve448 and Kyber1024 in a hybrid key exchange, we can leverage the efficiency and security benefits of Curve448 while also incorporating the post-quantum resistance of Kyber1024. This hybrid approach allows us to strike a balance between immediate performance needs and long-term security considerations. It is particularly advantageous in scenarios where both efficient key exchange and protection against future quantum threats are crucial.
 
 ### Description and logic;
-- X25519 given 128-bit security level
-- Kyber-768 given (equal AES-192) mean 192-bit security level
+- Curve given 224-bit security level
+- Kyber-768 given (equal AES-256) mean 256-bit security level
   
-If we `merged` them it means we will achieve security level nearly `320-bytes`, its lightweight enough.
+If we `merged` them it means we will achieve security level nearly `480-bytes`, this not lightweight but more secured.
 
 
 ### SPHINXKey Namespace
@@ -44,11 +42,11 @@ The `SPHINXKey` namespace provides functions for generating key pairs, calculati
 
 ### Functions
 
-- The code defines a function called performX25519KeyExchange that performs the `X25519` key exchange given a private key, public key, and a buffer to store the shared key.
+- The code defines a function called performX448KeyExchange that performs the `curve448` key exchange given a private key, public key, and a buffer to store the shared key.
 
-- It defines a structure called HybridKeypair, which holds the merged key pair consisting of a Kyber768 key pair and an `X25519` key pair, as well as PKE key pair, and a random number generator.
+- It defines a structure called HybridKeypair, which holds the merged key pair consisting of a `Kyber1024` key pair and and `curve448` key pair, as well as PKE key pair, and a random number generator.
 
-- The function `generate_hybrid_keypair` generates a hybrid key pair by generating a `Kyber768` key pair, an `X25519` key pair, and a PKE key pair using appropriate functions. It returns the generated hybrid key pair.
+- The function `generate_hybrid_keypair` generates a hybrid key pair by generating a `Kyber1024` key pair, an `curve448` key pair, and a PKE key pair using appropriate functions. It returns the generated hybrid key pair.
 
 - The function deriveMasterKeyAndChainCode is used to derive a master private key and chain code from a given seed using the `HMAC-SHA512` function. It returns the `derived master private key` and `chain code` as a pair.
 
@@ -64,28 +62,28 @@ The `SPHINXKey` namespace provides functions for generating key pairs, calculati
 
 - The function `requestDigitalSignatur`e requests a digital signature for a given data using the provided hybrid key pair.
 
-- The functions encryptMessage and decryptMessage are used to encrypt and decrypt a message, respectively, using the `Kyber768` KEM (Key Encapsulation Mechanism).
+- The functions encryptMessage and decryptMessage are used to encrypt and decrypt a message, respectively, using the `Kyber1024` KEM (Key Encapsulation Mechanism).
 
-- The functions `encapsulateHybridSharedSecret` and `decapsulateHybridSharedSecret` are used to encapsulate and decapsulate a shared secret using the `hybrid KEM`, which combines `X25519` and `Kyber768`.
+- The functions `encapsulateHybridSharedSecret` and `decapsulateHybridSharedSecret` are used to encapsulate and decapsulate a shared secret using the `hybrid KEM`, which combines `curve448` and `Kyber1024`.
 
 This code provides a set of functions and structures to support hybrid key generation, key exchange, encryption, decryption, and other cryptographic operations.
 
 
 #### The interaction and collaboration between Hybrid_Key.hpp and [SPHINXKey](https://github.com/ChyKusuma/SPHINXHybridKey) can be summarized as follows:
 
-- In Key.cpp, the `generate_hybrid_keypair()` function is defined, which is responsible for generating a hybrid key pair. It internally calls functions from Hybrid_key.hpp to generate the Kyber768 key pair `(generate_kyber768_key_pair())` and the X25519 key pair `(generate_x25519_key_pair())`. It also generates the PKE key pair and initializes the `PRNG` for key generation. Finally, it returns the hybrid key pair.
+- In Key.cpp, the `generate_hybrid_keypair()` function is defined, which is responsible for generating a hybrid key pair. It internally calls functions from Hybrid_key.hpp to generate the Kyber768 key pair `(generate_kyber768_key_pair())` and the `curve448` key pair `(generate_x448_key_pair())`. It also generates the PKE key pair and initializes the `PRNG` for key generation. Finally, it returns the hybrid key pair.
 
-- The `performX25519KeyExchange()` function in Key.cpp is used to perform the X25519 key exchange. It takes the private and public keys as inputs and uses the `performX25519KeyExchange()` function from Hybrid_key.hpp to perform the actual key exchange.
+- The `performX448KeyExchange()` function in Key.cpp is used to perform the `curve448` key exchange. It takes the private and public keys as inputs and uses the `performX448KeyExchange()` function from Hybrid_key.hpp to perform the actual key exchange.
 
-- The `performHybridKeyExchange()` function in Key.cpp combines the X25519 and Kyber768 key pairs to perform a hybrid key exchange. It calls the `performX25519KeyExchange()` function and also uses the `Kyber768` KEM `(kyber768_kem::encapsulate)` to encapsulate the shared key. The encapsulated key is stored in the shared_key parameter.
+- The `performHybridKeyExchange()` function in Key.cpp combines the X25519 and Kyber768 key pairs to perform a hybrid key exchange. It calls the `performX448KeyExchange()` function and also uses the `Kyber1024` KEM `(kyber1024_kem::encapsulate)` to encapsulate the shared key. The encapsulated key is stored in the shared_key parameter.
 
-- The `merge_key_pair()` function in Key.cpp merges the X25519 and Kyber768 key pairs into a single hybrid key pair. It combines the `X25519 public key` and the `Kyber768 private key`, and generates the Kyber768 public key from the private key. The merged key pair is returned.
+- The `merge_key_pair()` function in Key.cpp merges the X25519 and Kyber768 key pairs into a single hybrid key pair. It combines the `X448 public key` and the `Kyber1024 private key`, and generates the Kyber768 public key from the private key. The merged key pair is returned.
 
 - The `generate_and_perform_key_exchange()` function in Key.cpp demonstrates the complete process of generating a hybrid key pair and performing the hybrid key exchange. It calls `generate_hybrid_keypair()` to generate the key pair and then calls `performHybridKeyExchange()` to perform the key exchange using the generated key pair.
 
 - The `generateAddress()` function in Hybrid_key.hpp is used to generate a smart contract address based on a public key and contract name. It is called from the `printKeyPair()` function in Key.cpp to generate the address for a given public key.
 
-- The `calculatePublicKey()` function in Key.cpp calculates the public key from a given private key. It internally uses functions from Hybrid_key.hpp to generate the hybrid key pair, merge the key pairs, and extract the X25519 public key.
+- The `calculatePublicKey()` function in Key.cpp calculates the public key from a given private key. It internally uses functions from Hybrid_key.hpp to generate the hybrid key pair, merge the key pairs, and extract the `curve448` public key.
 
 The interaction between Key.cpp and Hybrid_key.hpp involves calling functions defined in Hybrid_key.hpp from Key.cpp to perform various operations related to hybrid key generation, key exchange, address generation, and public key calculation. Hybrid_key.hpp provides the necessary functions and data structures to support these operations, and Key.cpp utilizes them to implement the desired functionality.
 
