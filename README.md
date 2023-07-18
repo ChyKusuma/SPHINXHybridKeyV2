@@ -30,8 +30,8 @@ The combination of Curve448 and Kyber1024 in a hybrid key exchange is designed t
 By combining `Curve448` and `Kyber1024` in a hybrid key exchange, we can leverage the efficiency and security benefits of `Curve448` while also incorporating the post-quantum resistance of `Kyber1024`. This hybrid approach allows us to strike a balance between immediate performance needs and long-term security considerations. It is particularly advantageous in scenarios where both efficient key exchange and protection against future quantum threats are crucial.
 
 ### Description and logic;
-- Curve given 224-bit security level
-- Kyber-768 given (equal AES-256) mean 256-bit security level
+- `Curve448` given 224-bit security level
+- `Kyber-1024` given (equal AES-256) mean 256-bit security level
   
 If we `merged` them it means we will achieve security level nearly `480-bytes`, this not lightweight but more secured.
 
