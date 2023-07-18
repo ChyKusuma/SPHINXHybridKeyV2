@@ -23,11 +23,11 @@ This code is alternative for [SPHINXHybridKey](https://github.com/SPHINX-HUB-ORG
 
 The combination of Curve448 and Kyber1024 in a hybrid key exchange is designed to harness the unique strengths of each algorithm, resulting in a more robust and versatile cryptographic solution.
 
-Curve448 is an elliptic curve cryptography (ECC) algorithm based on the Curve448 curve. It provides efficient and secure key exchange operations, offering advantages such as strong security guarantees, resistance against various attacks, and compact key sizes. Curve448 is well-suited for scenarios where efficient key generation and secure key exchange are essential.
+`Curve448` is an elliptic curve cryptography (ECC) algorithm based on the Curve448 curve. It provides efficient and secure key exchange operations, offering advantages such as strong security guarantees, resistance against various attacks, and compact key sizes. Curve448 is well-suited for scenarios where efficient key generation and secure key exchange are essential.
 
-Kyber1024, on the other hand, is a post-quantum key encapsulation mechanism (KEM) based on the Learning With Errors (LWE) problem. It addresses the security challenges posed by quantum computers by providing resistance against attacks by quantum adversaries. Kyber1024 offers a high level of security in a post-quantum computing era when traditional cryptographic schemes may be vulnerable.
+`Kyber1024`, on the other hand, is a post-quantum key encapsulation mechanism (KEM) based on the Learning With Errors (LWE) problem. It addresses the security challenges posed by quantum computers by providing resistance against attacks by quantum adversaries. Kyber1024 offers a high level of security in a post-quantum computing era when traditional cryptographic schemes may be vulnerable.
 
-By combining Curve448 and Kyber1024 in a hybrid key exchange, we can leverage the efficiency and security benefits of Curve448 while also incorporating the post-quantum resistance of Kyber1024. This hybrid approach allows us to strike a balance between immediate performance needs and long-term security considerations. It is particularly advantageous in scenarios where both efficient key exchange and protection against future quantum threats are crucial.
+By combining `Curve448` and `Kyber1024` in a hybrid key exchange, we can leverage the efficiency and security benefits of `Curve448` while also incorporating the post-quantum resistance of `Kyber1024`. This hybrid approach allows us to strike a balance between immediate performance needs and long-term security considerations. It is particularly advantageous in scenarios where both efficient key exchange and protection against future quantum threats are crucial.
 
 ### Description and logic;
 - Curve given 224-bit security level
