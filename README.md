@@ -19,7 +19,7 @@ In this era of immense technological possibilities, the combination of curve448 
 
 ### The Purpose 
 
-[SPHINXKey]([https://github.com/ChyKusuma/SPHINXHybridKey](https://github.com/SPHINX-HUB-ORG/SPHINXHybridKey/tree/main))
+[SPHINXKey]([https://github.com/ChyKusuma/SPHINXHybridKey])
 
 This code is alternative for  consideration
 
