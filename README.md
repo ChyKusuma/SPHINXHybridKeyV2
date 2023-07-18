@@ -19,7 +19,7 @@ In this era of immense technological possibilities, the combination of `curve448
 
 ### The Purpose 
 
-This code is alternative [SPHINXHybridKey](https://github.com/SPHINX-HUB-ORG/SPHINXHybridKey) as further consideration.
+This code is alternative for [SPHINXHybridKey](https://github.com/SPHINX-HUB-ORG/SPHINXHybridKey) as further consideration.
 
 The combination of Curve448 and Kyber1024 in a hybrid key exchange is designed to harness the unique strengths of each algorithm, resulting in a more robust and versatile cryptographic solution.
 
