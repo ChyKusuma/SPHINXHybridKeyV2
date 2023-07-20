@@ -144,36 +144,43 @@ namespace SPHINXHybridKey {
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // HybridKeyPair Function to generate the hybrid keypair and corresponding private and public keys
-    // The code first generates a Kyber1024 keypair for KEM, then generates an X448 keypair, and 
+    // Function to generate a hybrid keypair and corresponding private and public keys.
+    // The function first generates a Kyber1024 keypair for KEM, then generates an X448 keypair, and 
     // finally generates a PKE keypair. The private and public keys are then derived from the master 
-    // private key and chain code using HMAC-SHA512.
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    HybridKeypair generate_hybrid_keypair() {
-        HybridKeypair hybrid_keypair;
-        hybrid_keypair.prng.resize(32);
+    // private key and chain code using HMAC-SHA512. The generated hybrid keypair includes the Kyber1024
+    // public and private keys, as well as the X448 keypair and PKE keypair.
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Function to generate the hybrid keypair using functions from "hybrid_key.cpp"
+    SPHINXHybridKey::HybridKeypair generate_hybrid_keypair() {
+        HybridKeypair hybridKeyPair;
+        hybridKeyPair.prng.resize(32);
 
         // Generate Kyber1024 keypair for KEM
-        hybrid_keypair.merged_key.kyber_public_key.resize(KYBER1024_PUBLIC_KEY_LENGTH);
-        hybrid_keypair.merged_key.kyber_private_key.resize(KYBER1024_PRIVATE_KEY_LENGTH);
-        kyber1024_kem::keygen(hybrid_keypair.merged_key.kyber_public_key.data(), hybrid_keypair.merged_key.kyber_private_key.data());
+        hybridKeyPair.merged_key.kyber_public_key.resize(KYBER1024_PUBLIC_KEY_LENGTH);
+        hybridKeyPair.merged_key.kyber_private_key.resize(KYBER1024_PRIVATE_KEY_LENGTH);
+        kyber1024_kem::keygen(hybridKeyPair.merged_key.kyber_public_key.data(), hybridKeyPair.merged_key.kyber_private_key.data());
 
         // Generate X448 keypair
-        hybrid_keypair.x448_key.first.resize(CURVE448_PUBLIC_KEY_SIZE);
-        hybrid_keypair.x448_key.second.resize(CURVE448_PRIVATE_KEY_SIZE);
-        RAND_bytes(hybrid_keypair.x448_key.first.data(), CURVE448_PUBLIC_KEY_SIZE);
-        RAND_bytes(hybrid_keypair.x448_key.second.data(), CURVE448_PRIVATE_KEY_SIZE);
+        hybridKeyPair.x448_key.first.resize(CURVE448_PUBLIC_KEY_SIZE);
+        hybridKeypair.x448_key.second.resize(CURVE448_PRIVATE_KEY_SIZE);
+        RAND_bytes(hybridKeyPair.x448_key.first.data(), CURVE448_PUBLIC_KEY_SIZE);
+        RAND_bytes(hybridKeyPair.x448_key.second.data(), CURVE448_PRIVATE_KEY_SIZE);
 
         // Resize PKE keypair vectors
-        hybrid_keypair.public_key_pke.resize(KYBER1024_PKE_PUBLIC_KEY_LENGTH);
-        hybrid_keypair.secret_key_pke.resize(KYBER1024_PKE_PRIVATE_KEY_LENGTH);
+        hybridKeyPair.public_key_pke.resize(KYBER1024_PKE_PUBLIC_KEY_LENGTH);
+        hybridKeyPair.secret_key_pke.resize(KYBER1024_PKE_PRIVATE_KEY_LENGTH);
 
         // Generate PKE keypair
-        kyber1024_pke::keygen(hybrid_keypair.prng.data(), hybrid_keypair.public_key_pke.data(), hybrid_keypair.secret_key_pke.data());
+        kyber1024_pke::keygen(hybridKeyPair.prng.data(), hybridKeyPair.public_key_pke.data(), hybridKeyPair.secret_key_pke.data());
 
         // Derive the master private key and chain code using HMAC-SHA512 from a seed value
-        std::string seed = "ThisIsAVeryLongAndRandomStringThatIsAtLeast256BitsLong";
-        std::pair<std::string, std::string> masterKeyAndChainCode = deriveMasterKeyAndChainCode(seed);
+        auto deriveKeyHMAC_SHA512 = [](const std::string& key, const std::string& salt) {
+            std::string seed = "ThisIsAVeryLongAndRandomStringThatIsAtLeast256BitsLong";
+
+            return std::make_pair("master_key", "chain_code");
+        };
+
+        auto masterKeyAndChainCode = deriveKeyHMAC_SHA512("seed_value", "seed_salt");
 
         // Derive the private and public keys using HMAC-SHA512 from the master private key and chain code
         std::string SPHINXPrivKey = deriveKeyHMAC_SHA512(masterKeyAndChainCode.first, "private_key_salt");
@@ -184,12 +191,72 @@ namespace SPHINXHybridKey {
         SPHINXPubKey = SPHINXHash::SPHINX_256(SPHINXPubKey);
 
         // Save the private and public keys in the hybrid keypair
-        hybrid_keypair.SPHINXPrivKey.resize(PRIVATE_KEY_LENGTH);
-        hybrid_keypair.SPHINXPubKey.resize(PUBLIC_KEY_LENGTH);
-        std::copy(SPHINXPrivKey.begin(), SPHINXPrivKey.end(), hybrid_keypair.SPHINXPrivKey.begin());
-        std::copy(SPHINXPubKey.begin(), SPHINXPubKey.end(), hybrid_keypair.SPHINXPubKey.begin());
+        hybridKeyPair.merged_key.kyber_private_key.assign(SPHINXPrivKey.begin(), SPHINXPrivKey.end());
+        hybridKeyPair.merged_key.kyber_public_key.assign(SPHINXPubKey.begin(), SPHINXPubKey.end());
 
-        return hybrid_keypair;
+        return hybridKeyPair; // Return the hybrid_keypair object
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Function to generate and perform a hybrid key exchange
+    // The function first generates a hybrid keypair consisting of a Kyber1024 keypair for KEM and an
+    // X448 keypair. Then, it generates a PKE keypair. The private and public keys are derived from
+    // the master private key and chain code using HMAC-SHA512. The function performs a key exchange
+    // using X448 and Kyber1024 KEM to generate a shared secret. It also demonstrates encrypting and
+    // decrypting a message using Kyber1024 PKE.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    HybridKeypair generate_and_perform_key_exchange() {
+        // Local function to perform the X448 key exchange
+        void performX448KeyExchange(unsigned char shared_key[SPHINXHybridKey::CURVE448_SHARED_SECRET_SIZE], const unsigned char private_key[SPHINXHybridKey::CURVE448_PRIVATE_KEY_SIZE], const unsigned char public_key[SPHINXHybridKey::CURVE448_PUBLIC_KEY_SIZE]) {
+            EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_X448, nullptr);
+            EVP_PKEY_derive_init(ctx);
+            EVP_PKEY_derive_set_peer(ctx, EVP_PKEY_new_raw_public_key(EVP_PKEY_X448, nullptr, public_key, SPHINXHybridKey::CURVE448_PUBLIC_KEY_SIZE));
+            size_t shared_key_len;
+            EVP_PKEY_derive(ctx, shared_key, &shared_key_len);
+            EVP_PKEY_CTX_free(ctx);
+        }
+
+        // Local function to perform the key exchange using X448 and Kyber1024 KEM
+        std::string encapsulateHybridSharedSecret(const SPHINXHybridKey::HybridKeypair& hybridKeyPair, std::vector<uint8_t>& encapsulated_key) {
+            encapsulated_key.resize(SPHINXHybridKey::KYBER1024_CIPHERTEXT_LENGTH);
+
+            // Generate the shared secret using X448 key exchange
+            unsigned char shared_secret[SPHINXHybridKey::CURVE448_SHARED_SECRET_SIZE];
+            performX448KeyExchange(shared_secret, hybridKeyPair.x448_key.second.data(), hybridKeyPair.x448_key.first.data());
+
+            // Encapsulate the shared secret using Kyber1024 KEM
+            SPHINXHybridKey::kyber1024_kem::encapsulate(encapsulated_key.data(), hybridKeyPair.merged_key.kyber_public_key.data(), shared_secret, hybridKeyPair.merged_key.kyber_private_key.data());
+
+            // Return the shared secret as a string
+            return std::string(reinterpret_cast<char*>(shared_secret), SPHINXHybridKey::CURVE448_SHARED_SECRET_SIZE);
+        }
+
+        // Generate the hybrid keypair
+        SPHINXHybridKey::HybridKeypair hybridKeyPair = SPHINXHybridKey::generate_hybrid_keypair();
+
+        // Calculate the SPHINX public key from the private key in the hybrid keypair
+        SPHINXHybridKey::sphinxPublicKey = SPHINXHybridKey::calculatePublicKey(hybridKeyPair.merged_key.kyber_private_key);
+
+        // Perform the key exchange using X448 and Kyber1024 KEM
+        std::vector<uint8_t> encapsulated_key;
+        std::string shared_secret = encapsulateHybridSharedSecret(hybridKeyPair, encapsulated_key);
+
+        // Example message to be encrypted
+        std::string message = "Hello, this is a secret message.";
+
+        // Encrypt the message using Kyber1024 PKE with the public key
+        std::string encrypted_message = SPHINXHybridKey::encryptMessage(message, hybridKeyPair.public_key_pke);
+
+        // Decrypt the message using Kyber1024 PKE with the secret key
+        std::string decrypted_message = SPHINXHybridKey::decryptMessage(encrypted_message, hybridKeyPair.secret_key_pke);
+
+        // Print the original message, encrypted message, and decrypted message
+        std::cout << "Original Message: " << message << std::endl;
+        std::cout << "Encrypted Message: " << encrypted_message << std::endl;
+        std::cout << "Decrypted Message: " << decrypted_message << std::endl;
+
+        // Return the shared secret as specified in the function signature
+        return shared_secret;
     }
 
     // Function to generate a random nonce
@@ -223,8 +290,8 @@ namespace SPHINXHybridKey {
 
     // Function to generate an address from a public key
     std::string generateAddress(const std::string& publicKey) {
-        std::string hash = hash(publicKey);
-        std::string address = hash.substr(0, 20);
+        std::string SPHINXHash = SPHINXHybridKey::SPHINXHash::SPHINX_256(publicKey);
+        std::string address = SPHINXHash.substr(0, 20);
 
         return address;
     }
@@ -263,27 +330,27 @@ namespace SPHINXHybridKey {
     }
 
     // Function to encapsulate a shared secret using the hybrid KEM
-    std::string encapsulateHybridSharedSecret(const HybridKeypair& hybrid_keypair, std::vector<uint8_t>& encapsulated_key) {
+    std::string encapsulateHybridSharedSecret(const HybridKeypair& hybridKeyPair, std::vector<uint8_t>& encapsulated_key) {
         encapsulated_key.resize(KYBER1024_CIPHERTEXT_LENGTH);
         unsigned char x448_private_key[CURVE448_PRIVATE_KEY_SIZE];
-        curve448_keypair(hybrid_keypair.x448_key.first.data(), x448_private_key);
+        curve448_keypair(hybridKeyPair.x448_key.first.data(), x448_private_key);
 
         unsigned char shared_secret[CURVE448_SHARED_SECRET_SIZE];
-        performX448KeyExchange(shared_secret, x448_private_key, hybrid_keypair.merged_key.kyber_public_key.data());
+        performX448KeyExchange(shared_secret, x448_private_key, hybridKeyPair.merged_key.kyber_public_key.data());
 
-        kyber1024_kem::encapsulate(encapsulated_key.data(), hybrid_keypair.x448_key.first.data(), hybrid_keypair.merged_key.kyber_public_key.data(), hybrid_keypair.merged_key.kyber_private_key.data());
+        kyber1024_kem::encapsulate(encapsulated_key.data(), hybridKeyPair.x448_key.first.data(), hybridKeyPair.merged_key.kyber_public_key.data(), hybridKeyPair.merged_key.kyber_private_key.data());
 
         return std::string(reinterpret_cast<char*>(shared_secret), CURVE448_SHARED_SECRET_SIZE);
     }
 
     // Function to decapsulate a shared secret using the hybrid KEM
-    std::string decapsulateHybridSharedSecret(const HybridKeypair& hybrid_keypair, const std::vector<uint8_t>& encapsulated_key) {
+    std::string decapsulateHybridSharedSecret(const HybridKeypair& hybridKeyPair, const std::vector<uint8_t>& encapsulated_key) {
         unsigned char x448_public_key[CURVE448_PUBLIC_KEY_SIZE];
         unsigned char shared_secret[CURVE448_SHARED_SECRET_SIZE];
-        kyber1024_kem::decapsulate(shared_secret, encapsulated_key.data(), hybrid_keypair.merged_key.kyber_private_key->data());
+        kyber1024_kem::decapsulate(shared_secret, encapsulated_key.data(), hybridKeyPair.merged_key.kyber_private_key->data());
 
         unsigned char derived_shared_secret[CURVE448_SHARED_SECRET_SIZE];
-        performX448KeyExchange(derived_shared_secret, hybrid_keypair.x448_key.second.data(), x448_public_key);
+        performX448KeyExchange(derived_shared_secret, hybridKeyPair.x448_key.second.data(), x448_public_key);
 
         if (std::memcmp(shared_secret, derived_shared_secret, CURVE448_SHARED_SECRET_SIZE) != 0) {
             throw std::runtime_error("Shared secret mismatch");
