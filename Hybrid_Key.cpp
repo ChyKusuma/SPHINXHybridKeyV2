@@ -13,94 +13,33 @@
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-// The code provided belongs to the SPHINXHybridKey namespace and contains various functions and a structure related to hybrid key operations using different cryptographic algorithms. Let's go through each part of the code to understand its functionality:
+// This code is part of a C++ library called SPHINXHybridKey, which provides functionality for generating and using hybrid cryptographic keypairs using the Kyber1024 key exchange, X448 key exchange, and PKE (Public Key Encryption) schemes. Let's break down the code and explain each part in detail:
 
-// performX448KeyExchange:
-    // This function performs the X448 key exchange by utilizing the curve448_keypair and curve448_scalarmult functions. It takes private and public keys as input and computes the shared key.
+// Constants:
+    // The code starts with defining several constants, such as key sizes and digest sizes, which are used throughout the library to specify the length of keys, ciphertexts, shared secrets, etc.
 
-// HybridKeypair structure:
-    // This structure holds the merged keypair information.
-    // It has the following members:
-        // merged_key: A nested structure that stores the Kyber1024 keypair (kyber_public_key and kyber_private_key).
-        // x448_key: A pair of vectors (first and second) to store the Curve448 keypair.
-        // public_key_pke: A vector to hold the public key for PKE (Public Key Encryption).
-        // secret_key_pke: A vector to hold the secret key for PKE.
-        // prng: An instance of the kyber1024_pke::RandomNumberGenerator for key generation.
+// Namespace and Forward Declarations:
+    // The code uses the SPHINXHybridKey namespace to encapsulate all the functions and structures provided by the library. It also contains forward declarations for three namespaces: kyber1024_kem, kyber1024_pke, and SPHINXHash. These forward declarations allow the code to reference functions from those namespaces before their full implementation is provided.
 
-// generate_hybrid_keypair:
-    // This function generates a hybrid keypair.
-    // It generates the Kyber1024 keypair using the keygen function and stores it in merged_key.kyber_public_key and merged_key.kyber_private_key.
-    // It generates the Curve448 keypair using the curve448_keypair function and stores it in x448_key.
-    // It resizes the PKE keypair vectors (public_key_pke and secret_key_pke) and generates the PKE keypair using the keygen function.
+// performX448KeyExchange Function:
+    // This function performs a key exchange using the X448 elliptic curve Diffie-Hellman (ECDH) algorithm. It takes the private and public keys as input and computes the shared secret using X448. The function is using OpenSSL EVP (Envelope) API for cryptographic operations.
 
-// deriveMasterKeyAndChainCode:
-    // This function derives the master private key and chain code from a given seed.
-    // It uses the deriveKeyHMAC_SWIFFTX function to derive the master private key and chain code based on the seed.
-    // It returns the derived master private key and chain code as a pair of strings.
+// HybridKeypair Structure:
+    // This structure represents a hybrid keypair containing key material from multiple cryptographic schemes. It holds Kyber1024 keypair, X448 keypair, PKE keypair, and a PRNG (pseudo-random number generator) for key generation.
 
-// deriveKeyHMAC_SHA512:
-    // This function derives a key using HMAC-SHA512.
-    // It takes a key and data as input and performs HMAC-SHA512 hashing using the provided key and data.
-    // It returns the derived key as a string.
-    // hashSWIFFTX512:
-        // This function calculates the SWIFFTX-512 hash of a string.
-        // It initializes the hash state, updates it with the input data, and finalizes the hash.
-        // It returns the hashed data as a string.
+// generate_hybrid_keypair Function:
+    // This function generates a hybrid keypair using three cryptographic schemes: Kyber1024 for KEM (Key Encapsulation Mechanism), X448 for key exchange, and PKE for public-key encryption. It starts by generating the Kyber1024 keypair, X448 keypair, and PKE keypair using the appropriate functions from their respective namespaces. Then, it derives the master private key and chain code using HKDF (HMAC-based Key Derivation Function). Finally, it hashes the master private key and chain code using the SPHINXHash::SPHINX_256 function, and the resulting private and public keys are saved in the hybrid keypair.
 
-// generateRandomNonce:
-    // This function generates a random nonce using the SPHINXUtils::generateRandomNonce function.
-    // It returns the generated nonce as a string.
+// Other Utility Functions:
+    // The code also provides utility functions like generateRandomNonce, which generates a random nonce for encryption, deriveKeyHKDF, which derives a key using the HKDF (HMAC-based Key Derivation Function) algorithm, hash, which calculates the SWIFFTX-256 hash of a string, and generateAddress, which generates an address from a public key.
 
-// deriveKeyHKDF:
-    // This function derives a key using the HKDF (HMAC-based Key Derivation Function) algorithm.
-    // It takes the input key material, salt, info, and key length as input.
-    // It uses the EVP_PKEY functions to perform HKDF with SHA256.
-    // It returns the derived key as a compressed key (SPHINX-256 hash) in a string.
-    // hash:
-        // This function calculates the SWIFFTX-256 hash of a string.
-        // It uses the SPHINXHash::SPHINX_256 function to compute the hash.
-        // It returns the hashed data as a string.
+// encryptMessage and decryptMessage Functions:
+    // These functions use Kyber1024 PKE to encrypt and decrypt messages, respectively. The encryption function takes a message and the recipient's public key, generates a random nonce, and encrypts the message using Kyber1024 PKE. The decryption function takes the encrypted message and the recipient's private key and decrypts the message using Kyber1024 PKE.
 
-// generateKeyPair:
-    // This function generates a key pair.
-    // It generates a random private key and computes the public key by hashing the private key.
-    // It returns the key pair as a pair of strings (private key and public key).
+// encapsulateHybridSharedSecret and decapsulateHybridSharedSecret Functions:
+    // These functions are responsible for encapsulating and decapsulating shared secrets using the hybrid KEM (Key Encapsulation Mechanism). They combine X448 key exchange and Kyber1024 KEM to establish a shared secret between two parties.
 
-// generateAddress:
-    // This function generates an address from a given public key.
-    // It computes the hash of the public key and returns the first 20 characters of the hash as the address.
-
-// requestDigitalSignature:
-    // This function requests a digital signature for a given data using the hybrid keypair.
-    // It uses the SPHINXSign::verify_data function to generate the signature.
-    // It returns the signature as a string.
-
-// encryptMessage:
-    // This function encrypts a message using Kyber1024 KEM (Key Encapsulation Mechanism).
-    // It takes a message and a public key for PKE as input.
-    // It generates a random nonce and uses the cpapke::encrypt function to encrypt the message.
-    // It returns the encrypted message as a string.
-
-// decryptMessage:
-    // This function decrypts an encrypted message using Kyber1024 KEM.
-    // It takes the encrypted message and the secret key for PKE as input.
-    // It uses the cpapke::decrypt function to decrypt the message.
-    // It returns the decrypted message as a string.
-
-// encapsulateHybridSharedSecret:
-    // This function encapsulates a shared secret using the hybrid KEM (Key Encapsulation Mechanism).
-    // It takes the hybrid keypair and a vector to store the encapsulated key as input.
-    // It performs the X448 key exchange and the Kyber1024 encapsulation to derive the shared secret and encapsulated key.
-    // It returns the shared secret as a string.
-
-// decapsulateHybridSharedSecret:
-    // This function decapsulates a shared secret using the hybrid KEM.
-    // It takes the hybrid keypair and the encapsulated key as input.
-    // It performs the X448 key exchange and the Kyber1024 decapsulation to derive the shared secret.
-    // It checks if the derived shared secret matches the provided shared secret and throws an error if they don't match.
-    // It returns the shared secret as a string.
-
-// This code provides functions for generating and manipulating hybrid keypairs using Curve448 and Kyber1024 algorithms. It also includes functions for key derivation, hashing, encryption, decryption, and digital signatures.
+// The SPHINXHybridKey library provides a flexible and secure approach to generating hybrid cryptographic keypairs and performing key exchange and encryption operations using the Kyber1024, X448, and PKE schemes.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -118,6 +57,7 @@
 #include "lib/Openssl/hkdf.h" 
 #include "lib/Openssl/hmac.h"
 #include "lib/Openssl/curve448/point_448.h"
+#include "lib/Openssl/curve448/curve448utils.h"
 #include "lib/Openssl/sha.h"
 #include "lib/Swifftx/SHA3.h"
 #include "lib/Kyber/include/kyber1024_kem.hpp"
@@ -126,26 +66,70 @@
 #include "lib/Kyber/include/decapsulation.hpp"
 #include "lib/Kyber/include/encryption.hpp"
 #include "lib/Kyber/include/compression.hpp"
+#include "lib/Kyber/include/pke_keygen.hpp"
 
-
+#include "lib/Swifftx/SHA3.h"
 #include "Hash.hpp"
 #include "Key.hpp"
+#include "Transaction.hpp"
+#include "Hybrid_key.hpp"
 
 
 namespace SPHINXHybridKey {
 
+    // Constants
+    constexpr size_t CURVE448_PRIVATE_KEY_SIZE = 56;
+    constexpr size_t CURVE448_PUBLIC_KEY_SIZE = 56;
+    constexpr size_t CURVE448_SHARED_SECRET_SIZE = 56;
+    constexpr size_t HMAC_MAX_MD_SIZE = EVP_MAX_MD_SIZE;
+    constexpr size_t SWIFFTX512_DIGEST_SIZE = 65;
+    constexpr size_t SPHINXHash_DIGEST_SIZE = 65;
+    constexpr size_t KYBER1024_PUBLIC_KEY_LENGTH = 800;
+    constexpr size_t KYBER1024_PRIVATE_KEY_LENGTH = 1632;
+    constexpr size_t KYBER1024_CIPHERTEXT_LENGTH = 1088;
+    constexpr size_t KYBER1024_SHARED_SECRET_LENGTH = 32;
+    constexpr size_t KYBER1024_PKE_PUBLIC_KEY_LENGTH = 800;
+    constexpr size_t KYBER1024_PKE_PRIVATE_KEY_LENGTH = 1632;
+    constexpr size_t KYBER1024_PKE_CIPHERTEXT_LENGTH = 1088;
+
+    // Forward declaration
+    namespace kyber1024_kem {
+        void keygen(std::vector<unsigned char>& public_key, std::vector<unsigned char>& private_key);
+        void encapsulate(unsigned char* ciphertext, const unsigned char* public_key, const unsigned char* shared_secret, const unsigned char* private_key);
+        void decapsulate(unsigned char* shared_secret, const unsigned char* ciphertext, const unsigned char* private_key);
+    }
+
+    // Forward declaration
+    namespace kyber1024_pke {
+        void keygen(unsigned char* random_bytes, unsigned char* public_key, unsigned char* secret_key);
+        void encrypt(const unsigned char* public_key, const unsigned char* message, size_t message_length,
+                const unsigned char* nonce, size_t nonce_length, unsigned char* ciphertext, size_t ciphertext_length,
+                size_t tag_length);
+        void decrypt(const unsigned char* secret_key, const unsigned char* ciphertext, size_t ciphertext_length,
+                size_t tag_length, unsigned char* message, size_t message_length);
+    }
+
+    // Forward declaration
+    namespace SPHINXHash {
+        std::string SPHINX_256(const std::string& input);
+    }
+
     // Function to perform the X448 key exchange
-    void performX448KeyExchange(unsigned char shared_key[56], const unsigned char private_key[56], const unsigned char public_key[56]) {
-        curve448_keypair(shared_key, private_key);
-        curve448_scalarmult(shared_key, shared_key, public_key);
+    void performX448KeyExchange(unsigned char shared_key[CURVE448_SHARED_SECRET_SIZE], const unsigned char private_key[CURVE448_PRIVATE_KEY_SIZE], const unsigned char public_key[CURVE448_PUBLIC_KEY_SIZE]) {
+        EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_X448, nullptr);
+        EVP_PKEY_derive_init(ctx);
+        EVP_PKEY_derive_set_peer(ctx, EVP_PKEY_new_raw_public_key(EVP_PKEY_X448, nullptr, public_key, CURVE448_PUBLIC_KEY_SIZE));
+        size_t shared_key_len;
+        EVP_PKEY_derive(ctx, shared_key, &shared_key_len);
+        EVP_PKEY_CTX_free(ctx);
     }
 
     // Structure to hold the merged keypair
     struct HybridKeypair {
         struct {
             // Kyber1024 keypair
-            kyber1024_kem::PublicKey kyber_public_key;
-            kyber1024_kem::PrivateKey kyber_private_key;
+            std::vector<unsigned char> kyber_public_key;
+            std::vector<unsigned char> kyber_private_key;
         } merged_key;
 
         // X448 keypair
@@ -156,107 +140,85 @@ namespace SPHINXHybridKey {
         std::vector<uint8_t> secret_key_pke;
 
         // PRNG for key generation
-        kyber1024_pke::RandomNumberGenerator prng;
+        std::vector<unsigned char> prng;
     };
 
-    // Function to generate the hybrid keypair
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // HybridKeyPair Function to generate the hybrid keypair and corresponding private and public keys
+    // The code first generates a Kyber1024 keypair for KEM, then generates an X448 keypair, and 
+    // finally generates a PKE keypair. The private and public keys are then derived from the master 
+    // private key and chain code using HMAC-SHA512.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     HybridKeypair generate_hybrid_keypair() {
         HybridKeypair hybrid_keypair;
+        hybrid_keypair.prng.resize(32);
 
         // Generate Kyber1024 keypair for KEM
-        hybrid_keypair.merged_key.kyber_public_key = kyber1024_kem::keygen(hybrid_keypair.merged_key.kyber_private_key);
+        hybrid_keypair.merged_key.kyber_public_key.resize(KYBER1024_PUBLIC_KEY_LENGTH);
+        hybrid_keypair.merged_key.kyber_private_key.resize(KYBER1024_PRIVATE_KEY_LENGTH);
+        kyber1024_kem::keygen(hybrid_keypair.merged_key.kyber_public_key.data(), hybrid_keypair.merged_key.kyber_private_key.data());
 
         // Generate X448 keypair
-        hybrid_keypair.x448_key.first.resize(56);
-        hybrid_keypair.x448_key.second.resize(56);
-        curve448_keypair(hybrid_keypair.x448_key.first.data(), hybrid_keypair.x448_key.second.data());
+        hybrid_keypair.x448_key.first.resize(CURVE448_PUBLIC_KEY_SIZE);
+        hybrid_keypair.x448_key.second.resize(CURVE448_PRIVATE_KEY_SIZE);
+        RAND_bytes(hybrid_keypair.x448_key.first.data(), CURVE448_PUBLIC_KEY_SIZE);
+        RAND_bytes(hybrid_keypair.x448_key.second.data(), CURVE448_PRIVATE_KEY_SIZE);
 
         // Resize PKE keypair vectors
-        hybrid_keypair.public_key_pke.resize(kyber1024_pke::pub_key_len());
-        hybrid_keypair.secret_key_pke.resize(kyber1024_pke::sec_key_len());
+        hybrid_keypair.public_key_pke.resize(KYBER1024_PKE_PUBLIC_KEY_LENGTH);
+        hybrid_keypair.secret_key_pke.resize(KYBER1024_PKE_PRIVATE_KEY_LENGTH);
 
         // Generate PKE keypair
-        kyber1024_pke::keygen(hybrid_keypair.prng, hybrid_keypair.public_key_pke.data(), hybrid_keypair.secret_key_pke.data());
+        kyber1024_pke::keygen(hybrid_keypair.prng.data(), hybrid_keypair.public_key_pke.data(), hybrid_keypair.secret_key_pke.data());
+
+        // Derive the master private key and chain code using HMAC-SHA512 from a seed value
+        std::string seed = "ThisIsAVeryLongAndRandomStringThatIsAtLeast256BitsLong";
+        std::pair<std::string, std::string> masterKeyAndChainCode = deriveMasterKeyAndChainCode(seed);
+
+        // Derive the private and public keys using HMAC-SHA512 from the master private key and chain code
+        std::string SPHINXPrivKey = deriveKeyHMAC_SHA512(masterKeyAndChainCode.first, "private_key_salt");
+        std::string SPHINXPubKey = deriveKeyHMAC_SHA512(masterKeyAndChainCode.second, "public_key_salt");
+
+        // Hash the master private key and chain code using SPHINXHash::SPHINX_256
+        SPHINXPrivKey = SPHINXHash::SPHINX_256(SPHINXPrivKey);
+        SPHINXPubKey = SPHINXHash::SPHINX_256(SPHINXPubKey);
+
+        // Save the private and public keys in the hybrid keypair
+        hybrid_keypair.SPHINXPrivKey.resize(PRIVATE_KEY_LENGTH);
+        hybrid_keypair.SPHINXPubKey.resize(PUBLIC_KEY_LENGTH);
+        std::copy(SPHINXPrivKey.begin(), SPHINXPrivKey.end(), hybrid_keypair.SPHINXPrivKey.begin());
+        std::copy(SPHINXPubKey.begin(), SPHINXPubKey.end(), hybrid_keypair.SPHINXPubKey.begin());
 
         return hybrid_keypair;
     }
 
-    // Function to derive the master private key and chain code
-    std::pair<std::string, std::string> deriveMasterKeyAndChainCode(const std::string& seed) {
-        std::string masterPrivateKey = deriveKeyHMAC_SWIFFTX("Sphinx seed", seed);
-        std::string chainCode = deriveKeyHMAC_SWIFFTX("Sphinx chain code", seed);
-
-        return std::make_pair(masterPrivateKey, chainCode);
-    }
-
-    // Function to derive a key using HMAC-SHA512
-    std::string deriveKeyHMAC_SHA512(const std::string& key, const std::string& data) {
-        HMAC_SHA512_CTX ctx;
-        HMAC_SHA512_Init(&ctx);
-        HMAC_SHA512_Update(&ctx, reinterpret_cast<const unsigned char*>(key.data()), key.length());
-        HMAC_SHA512_Update(&ctx, reinterpret_cast<const unsigned char*>(data.data()), data.length());
-
-        unsigned char hmacResult[HMAC_SHA512_DIGEST_LENGTH];
-        HMAC_SHA512_Final(hmacResult, &ctx);
-
-        std::string derivedKey;
-        for (size_t i = 0; i < HMAC_SHA512_DIGEST_LENGTH; i++) {
-            derivedKey += static_cast<char>(hmacResult[i]);
-        }
-
-        return derivedKey;
-    }
-
-    // Function to calculate the SWIFFTX-512 hash of a string
-    std::string hashSWIFFTX512(const std::string& data) {
-        hashState state;
-        SWIFFTX512_Init(&state);
-        SWIFFTX512_Update(&state, reinterpret_cast<const BitSequence*>(data.data()), data.length() * 8);
-        BitSequence hashResult[SWIFFTX_OUTPUT_BLOCK_SIZE];
-        SWIFFTX512_Final(&state, hashResult);
-
-        std::string hashedData;
-        for (size_t i = 0; i < SWIFFTX_OUTPUT_BLOCK_SIZE; i++) {
-            hashedData += static_cast<char>(hashResult[i]);
-        }
-
-        return hashedData;
-    }
-
     // Function to generate a random nonce
     std::string generateRandomNonce() {
-        return SPHINXUtils::generateRandomNonce();
+        std::string nonce(32, '\0');
+        RAND_bytes(reinterpret_cast<unsigned char*>(&nonce[0]), nonce.size());
+        return nonce;
     }
 
     // Function to derive a key using HKDF
     std::string deriveKeyHKDF(const std::string& inputKeyMaterial, const std::string& salt, const std::string& info, size_t keyLength) {
         std::string derivedKey(keyLength, 0);
 
-        EVP_PKEY_CTX* pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_HKDF, nullptr);
-        EVP_PKEY_CTX_set_hkdf_md(pctx, EVP_sha256());
-        EVP_PKEY_CTX_set1_hkdf_salt(pctx, reinterpret_cast<const uint8_t*>(salt.data()), salt.length());
-        EVP_PKEY_CTX_set1_hkdf_key(pctx, reinterpret_cast<const uint8_t*>(inputKeyMaterial.data()), inputKeyMaterial.length());
-        EVP_PKEY_CTX_add1_hkdf_info(pctx, reinterpret_cast<const uint8_t*>(info.data()), info.length());
-        EVP_PKEY_CTX_set1_hkdf_size(pctx, keyLength);
-        EVP_PKEY_derive(pctx, reinterpret_cast<uint8_t*>(derivedKey.data()), &keyLength);
-        EVP_PKEY_CTX_free(pctx);
+        EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_HKDF, nullptr);
+        EVP_PKEY_derive_init(ctx);
+        EVP_PKEY_CTX_set_hkdf_md(ctx, EVP_sha256());
+        EVP_PKEY_CTX_set1_hkdf_key(ctx, reinterpret_cast<const unsigned char*>(inputKeyMaterial.c_str()), inputKeyMaterial.length());
+        EVP_PKEY_CTX_set1_hkdf_salt(ctx, reinterpret_cast<const unsigned char*>(salt.c_str()), salt.length());
+        EVP_PKEY_CTX_add1_hkdf_info(ctx, reinterpret_cast<const unsigned char*>(info.c_str()), info.length());
+        EVP_PKEY_CTX_set1_hkdf_keylen(ctx, keyLength);
+        EVP_PKEY_derive(ctx, reinterpret_cast<unsigned char*>(derivedKey.data()), &keyLength);
+        EVP_PKEY_CTX_free(ctx);
 
-        std::string compressedKey = SPHINXHash::SPHINX_256(derivedKey);
-
-        return compressedKey;
+        return derivedKey;
     }
 
     // Function to calculate the SWIFFTX-256 hash of a string
     std::string hash(const std::string& input) {
         return SPHINXHash::SPHINX_256(input);
-    }
-
-    // Function to generate a key pair
-    std::pair<std::string, std::string> generateKeyPair() {
-        std::string privateKey = generateRandomNonce();
-        std::string publicKey = hash(privateKey);
-
-        return {privateKey, publicKey};
     }
 
     // Function to generate an address from a public key
@@ -267,27 +229,18 @@ namespace SPHINXHybridKey {
         return address;
     }
 
-    // Function to request a digital signature
-    std::string requestDigitalSignature(const std::string& data, const HybridKeypair& hybrid_keypair) {
-        std::string signature = SPHINXSign::verify_data(data, hybrid_keypair.secret_key_pke.data());
-
-        return signature;
-    }
-
     // Function to encrypt a message using Kyber1024 KEM
     std::string encryptMessage(const std::string& message, const std::vector<uint8_t>& public_key_pke) {
         constexpr size_t tagLength = 16;
 
-        std::string encrypted_message(kyber1024_pke::cipher_text_len() + tagLength, 0);
+        std::string encrypted_message(KYBER1024_PKE_CIPHERTEXT_LENGTH + tagLength, 0);
 
         std::string nonce = generateRandomNonce();
 
-        cpapke::encrypt<1, kyber1024_kem::eta1, kyber1024_kem::eta2, kyber1024_kem::du, kyber1024_kem::dv>(
-            public_key_pke.data(),
-            reinterpret_cast<const uint8_t*>(message.data()),
-            reinterpret_cast<const uint8_t*>(nonce.data()),
-            reinterpret_cast<uint8_t*>(encrypted_message.data()),
-            reinterpret_cast<uint8_t*>(encrypted_message.data()) + kyber1024_pke::cipher_text_len(),
+        kyber1024_pke::encrypt(public_key_pke.data(),
+            reinterpret_cast<const uint8_t*>(message.data()), message.length(),
+            reinterpret_cast<const uint8_t*>(nonce.data()), nonce.length(),
+            reinterpret_cast<uint8_t*>(encrypted_message.data()), encrypted_message.length(),
             tagLength
         );
 
@@ -298,14 +251,12 @@ namespace SPHINXHybridKey {
     std::string decryptMessage(const std::string& encrypted_message, const std::vector<uint8_t>& secret_key_pke) {
         constexpr size_t tagLength = 16;
 
-        std::string decrypted_message(kyber1024_pke::cipher_text_len(), 0);
+        std::string decrypted_message(encrypted_message.length() - KYBER1024_PKE_CIPHERTEXT_LENGTH, 0);
 
-        cpapke::decrypt<1, kyber1024_kem::du, kyber1024_kem::dv>(
-            secret_key_pke.data(),
-            reinterpret_cast<const uint8_t*>(encrypted_message.data()),
-            reinterpret_cast<const uint8_t*>(encrypted_message.data()) + kyber1024_pke::cipher_text_len(),
+        kyber1024_pke::decrypt(secret_key_pke.data(),
+            reinterpret_cast<const uint8_t*>(encrypted_message.data()), encrypted_message.length(),
             tagLength,
-            reinterpret_cast<uint8_t*>(decrypted_message.data())
+            reinterpret_cast<uint8_t*>(decrypted_message.data()), decrypted_message.length()
         );
 
         return decrypted_message;
@@ -313,31 +264,31 @@ namespace SPHINXHybridKey {
 
     // Function to encapsulate a shared secret using the hybrid KEM
     std::string encapsulateHybridSharedSecret(const HybridKeypair& hybrid_keypair, std::vector<uint8_t>& encapsulated_key) {
-        unsigned char x448_private_key[56];
+        encapsulated_key.resize(KYBER1024_CIPHERTEXT_LENGTH);
+        unsigned char x448_private_key[CURVE448_PRIVATE_KEY_SIZE];
         curve448_keypair(hybrid_keypair.x448_key.first.data(), x448_private_key);
 
-        unsigned char shared_secret[56];
+        unsigned char shared_secret[CURVE448_SHARED_SECRET_SIZE];
         performX448KeyExchange(shared_secret, x448_private_key, hybrid_keypair.merged_key.kyber_public_key.data());
 
         kyber1024_kem::encapsulate(encapsulated_key.data(), hybrid_keypair.x448_key.first.data(), hybrid_keypair.merged_key.kyber_public_key.data(), hybrid_keypair.merged_key.kyber_private_key.data());
 
-        return std::string(shared_secret, shared_secret + sizeof(shared_secret));
+        return std::string(reinterpret_cast<char*>(shared_secret), CURVE448_SHARED_SECRET_SIZE);
     }
 
     // Function to decapsulate a shared secret using the hybrid KEM
     std::string decapsulateHybridSharedSecret(const HybridKeypair& hybrid_keypair, const std::vector<uint8_t>& encapsulated_key) {
-        unsigned char x448_public_key[56];
-        unsigned char shared_secret[56];
-        kyber1024_kem::decapsulate(x448_public_key, shared_secret, encapsulated_key.data(), hybrid_keypair.merged_key.kyber_private_key.data());
+        unsigned char x448_public_key[CURVE448_PUBLIC_KEY_SIZE];
+        unsigned char shared_secret[CURVE448_SHARED_SECRET_SIZE];
+        kyber1024_kem::decapsulate(shared_secret, encapsulated_key.data(), hybrid_keypair.merged_key.kyber_private_key->data());
 
-        unsigned char derived_shared_secret[56];
+        unsigned char derived_shared_secret[CURVE448_SHARED_SECRET_SIZE];
         performX448KeyExchange(derived_shared_secret, hybrid_keypair.x448_key.second.data(), x448_public_key);
 
-        if (std::memcmp(shared_secret, derived_shared_secret, sizeof(shared_secret)) != 0) {
+        if (std::memcmp(shared_secret, derived_shared_secret, CURVE448_SHARED_SECRET_SIZE) != 0) {
             throw std::runtime_error("Shared secret mismatch");
         }
 
-        return std::string(shared_secret, shared_secret + sizeof(shared_secret));
+        return std::string(reinterpret_cast<char*>(shared_secret), CURVE448_SHARED_SECRET_SIZE);
     }
-
 }  // namespace SPHINXHybridKey
