@@ -81,7 +81,7 @@ namespace SPHINXHybridKey {
     constexpr size_t CURVE448_PRIVATE_KEY_SIZE = 56;
     constexpr size_t CURVE448_PUBLIC_KEY_SIZE = 56;
     constexpr size_t CURVE448_SHARED_SECRET_SIZE = 56;
-    constexpr size_t HMAC_MAX_MD_SIZE = EVP_MAX_MD_SIZE;
+    constexpr size_t HMAC_MAX_MD_SIZE = 64;                     /* longest known is SHA512 */
     constexpr size_t SWIFFTX512_DIGEST_SIZE = 65;
     constexpr size_t SPHINXHash_DIGEST_SIZE = 65;
     constexpr size_t KYBER1024_PUBLIC_KEY_LENGTH = 800;
@@ -91,6 +91,10 @@ namespace SPHINXHybridKey {
     constexpr size_t KYBER1024_PKE_PUBLIC_KEY_LENGTH = 800;
     constexpr size_t KYBER1024_PKE_PRIVATE_KEY_LENGTH = 1632;
     constexpr size_t KYBER1024_PKE_CIPHERTEXT_LENGTH = 1088;
+
+    // Size of HYBRIDKEY
+    constexpr size_t HYBRID_KEYPAIR_LENGTH = SPHINXHybridKey::CURVE448_PUBLIC_KEY_SIZE + SPHINXHybridKey::KYBER1024_PUBLIC_KEY_LENGTH + 2 * SPHINXHybridKey::HMAC_MAX_MD_SIZE;
+    HYBRID_KEYPAIR_LENGTH = 56 (Curve448 public key size) + 800 (Kyber1024 public key length) + 2 * 64 (HMAC_MAX_MD_SIZE) = 976;
 
     // Forward declaration
     namespace kyber1024_kem {
