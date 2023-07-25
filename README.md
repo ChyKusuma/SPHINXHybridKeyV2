@@ -42,13 +42,13 @@ The `SPHINXKey` namespace provides functions for generating key pairs, calculati
 
 ### Functions
 
-- The code defines a function called performX448KeyExchange that performs the `curve448` key exchange given a private key, public key, and a buffer to store the shared key.
+- The code defines a function called `performX448KeyExchange` that performs the `curve448` key exchange given a private key, public key, and a buffer to store the shared key.
 
-- It defines a structure called HybridKeypair, which holds the merged key pair consisting of a `Kyber1024` key pair and and `curve448` key pair, as well as PKE key pair, and a random number generator.
+- It defines a structure called `HybridKeypair`, which holds the merged key pair consisting of a `Kyber1024` key pair and and `curve448` key pair, as well as PKE key pair, and a random number generator.
 
 - The function `generate_hybrid_keypair` generates a hybrid key pair by generating a `Kyber1024` key pair, an `curve448` key pair, and a PKE key pair using appropriate functions. It returns the generated hybrid key pair.
 
-- The function deriveMasterKeyAndChainCode is used to derive a master private key and chain code from a given seed using the `HMAC-SHA512` function. It returns the `derived master private key` and `chain code` as a pair.
+- The function `deriveMasterKeyAndChainCode` is used to derive a master private key and chain code from a given seed using the `HMAC-SHA512` function. It returns the `derived master private key` and `chain code` as a pair.
 
 - There are several utility functions defined, such as `deriveKeyHMAC_SHA512` to derive a key using `HMAC-SHA512`, `hashSWIFFTX512` to calculate the `SWIFFTX-512` hash of data, and `generateRandomNonce` to generate a random nonce.
 
@@ -56,13 +56,13 @@ The `SPHINXKey` namespace provides functions for generating key pairs, calculati
 
 - The function hash calculates the `SWIFFTX-256` hash of a given input.
 
-- The function generateKeyPair generates a random private key and calculates the corresponding public key by hashing the private key.
+- The function `generateKeyPair` generates a random private key and calculates the corresponding public key by hashing the private key.
 
-- The function generateAddress generates an address from a given public key by hashing the public key and taking the first 20 bytes of the hash.
+- The function `generateAddress` generates an address from a given public key by hashing the public key and taking the first 20 bytes of the hash.
 
 - The function `requestDigitalSignatur`e requests a digital signature for a given data using the provided hybrid key pair.
 
-- The functions encryptMessage and decryptMessage are used to encrypt and decrypt a message, respectively, using the `Kyber1024` KEM (Key Encapsulation Mechanism).
+- The functions `encryptMessage` and `decryptMessage` are used to encrypt and decrypt a message, respectively, using the `Kyber1024` KEM (Key Encapsulation Mechanism).
 
 - The functions `encapsulateHybridSharedSecret` and `decapsulateHybridSharedSecret` are used to encapsulate and decapsulate a shared secret using the `hybrid KEM`, which combines `curve448` and `Kyber1024`.
 
